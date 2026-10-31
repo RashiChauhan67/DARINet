@@ -31,26 +31,6 @@ Accuracies are the values recorded in the notebooks.
 
 ![DARINet architecture](docs/figures/darinet_architecture.png)
 
-*Schematic of the network (Cassava, 5 classes). Layer widths in `src/darinet/model.py` are authoritative.*
-
-The graph built by `src/darinet/model.py`:
-
-```mermaid
-flowchart LR
-    I["Input<br/>128 x 128 x 3"] --> C1["Conv 64, 3x3"]
-    C1 --> INC["Modified inception block<br/>1x1 | 1x1+SepConv | 1x1+2 SepConv | AvgPool+1x1"]
-    INC --> C2["Conv 64, 3x3, same"]
-    C1 --> ADD1(("+"))
-    C2 --> ADD1
-    ADD1 --> C3["Conv 128, 3x3"] --> MP["MaxPool 2x2"]
-    MP --> CH["Residual channel attention<br/>GAP -> Dense 64 -> Dense 128"]
-    MP --> SP["Residual spatial attention<br/>1x1 convs 8, 8, 128 -> map 1"]
-    MP --> ADD2(("+"))
-    CH --> ADD2
-    SP --> ADD2
-    ADD2 --> C4["Conv 256, 3x3"] --> GAP["GAP"] --> D["Dense 256 -> 128"] --> O["Dense N, softmax"]
-```
-
 ## Quick start
 
 ```bash
@@ -95,6 +75,8 @@ model = compile_model(build_darinet(num_classes=5))  # 648,390 parameters
 | `maize` | Maize leaf disease | blight, common rust, gray leaf spot, healthy | not recorded | 10% (421) |
 
 Data is not included; see [`data/README.md`](data/README.md) for the expected folder layout (class folders `0`, `1`, ...), sources and citations. Images are resized to 128 x 128, scaled to [0, 1] and read with OpenCV.
+
+![Sample leaves: Cassava and Rice](docs/figures/dataset_samples.png)
 
 ## Results
 
@@ -154,7 +136,7 @@ Training accuracy keeps rising while validation accuracy flattens near 0.75 and 
 ├── scripts/             # train.py, evaluate.py
 ├── tests/               # unit tests (synthetic data; no dataset needed)
 ├── notebooks/           # original experiment notebooks (Cassava, Rice, Maize)
-├── docs/figures/        # architecture figure
+├── docs/figures/        # architecture and dataset figures
 ├── results/             # recorded notebook results and figures
 └── data/README.md       # dataset instructions
 ```
@@ -180,4 +162,4 @@ If you use this code, please cite the paper (a `CITATION.cff` is provided):
 
 MIT. See [LICENSE](LICENSE). The datasets have their own licenses; check them before reuse.
 
-**Figures.** The architecture figure in `docs/figures/` is reproduced from the paper by its authors. Reuse of that figure is subject to the publisher's terms (IEEE); the MIT license covers the code and the result plots generated from the notebooks.
+**Figures.** The architecture figure in `docs/figures/` is reproduced from the paper by its authors. Reuse of that figure is subject to the publisher's terms (IEEE). The sample leaf images come from the Cassava and Rice datasets; check their licenses. The MIT license covers the code and the result plots generated from the notebooks.
