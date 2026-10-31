@@ -59,7 +59,7 @@ DATASETS: dict[str, DatasetSpec] = {
     ),
     "maize": DatasetSpec(
         key="maize",
-        description="Maize leaf disease, 4 classes (extra experiment, not in the paper)",
+        description="Maize leaf disease, 4 classes (extra experiment)",
         class_dirs=("0", "1", "2", "3"),
         class_names=("blight", "common_rust", "gray_leaf_spot", "healthy"),
         test_size=0.1,

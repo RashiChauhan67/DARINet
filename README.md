@@ -1,4 +1,6 @@
-# DARINet: Plant Disease Identification with a Dual Self-Attention Modified Residual-Inception Network
+# DARINet
+
+**Plant disease identification with a dual self-attention modified residual-inception network.**
 
 [![CI](https://github.com/RashiChauhan67/DARINet/actions/workflows/ci.yml/badge.svg)](https://github.com/RashiChauhan67/DARINet/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -7,24 +9,31 @@
 
 > **Paper.** R. Chauhan, M. Karnati, M. K. Dutta, R. Burget. *Plant Disease Identification Using a Dual Self-Attention Modified Residual-Inception Network.* 2023 15th International Congress on Ultra Modern Telecommunications and Control Systems and Workshops (**ICUMT**), IEEE, 2023. DOI: [10.1109/ICUMT61075.2023.10333302](https://doi.org/10.1109/ICUMT61075.2023.10333302)
 
-DARINet is a compact CNN (about 0.65 M parameters) for classifying leaf images by disease. It combines a **modified inception block** with depthwise-separable convolutions, a residual connection, and two attention modules (**channel** and **spatial**) whose outputs are summed with the features.
+[Overview](#overview) · [Architecture](#architecture) · [Quick start](#quick-start) · [Datasets](#datasets) · [Results](#results) · [Notes](#notes) · [Citation](#citation)
 
-The code was cleaned up from the original Colab notebooks (kept unmodified in [`notebooks/`](notebooks/)). The network is identical across datasets; only the number of output classes changes. Please read [Relationship between this code and the paper](#relationship-between-this-code-and-the-paper) before comparing numbers.
+## Overview
 
-## Highlights
+DARINet is a compact CNN (about 0.65 M parameters) for classifying leaf images by disease. It combines a **modified inception block** (depthwise-separable convolutions), a residual connection, and two attention modules, **channel** and **spatial**, whose outputs are summed with the features. The network is identical across datasets; only the output layer changes.
 
-- Three datasets: **Cassava** (5 classes), **Rice** (3 classes) and an extra **Maize** experiment (4 classes) that is not in the paper.
-- Recorded test accuracy in the notebooks: Cassava **77%** (590 test images, the paper reports 77.12%), Rice **97.92%** (only 48 test images, and the split may contain augmented copies of the same leaves; see Limitations; the paper reports 98.92%), Maize **94%** (421 test images).
-- 648,390 parameters for 5 classes; about 9.3 GFLOPs by the notebooks' estimator (the paper reports 0.63 M and 9).
-- Modular Keras 3 port with unit tests, a command-line trainer, and two training protocols (`notebook` and a leakage-free `holdout`).
+This repository has a cleaned, tested Keras 3 implementation, the original experiment notebooks, and the recorded results.
+
+| | Cassava | Rice | Maize |
+|---|---|---|---|
+| Classes | 5 | 3 | 4 |
+| Test images | 590 | 48 | 421 |
+| Test accuracy | **77%** | **97.9%** (see [Notes](#notes)) | **94%** |
+| Macro F1 | 0.71 | 0.97 | 0.92 |
+| Parameters | 648,390 | 648,132 | 648,261 |
+
+Accuracies are the values recorded in the notebooks.
 
 ## Architecture
 
-The author's figure from the paper (Cassava, 5 classes):
+![DARINet architecture](docs/figures/darinet_architecture.png)
 
-![DARINet architecture from the paper](docs/figures/darinet_architecture.png)
+*Schematic of the network (Cassava, 5 classes). Layer widths in `src/darinet/model.py` are authoritative.*
 
-What the code in `src/darinet/model.py` builds (this matches the notebooks, verified by parameter count for all three class counts):
+The graph built by `src/darinet/model.py`:
 
 ```mermaid
 flowchart LR
@@ -42,35 +51,7 @@ flowchart LR
     ADD2 --> C4["Conv 256, 3x3"] --> GAP["GAP"] --> D["Dense 256 -> 128"] --> O["Dense N, softmax"]
 ```
 
-## Relationship between this code and the paper
-
-| Item | Paper | Notebooks (and this code) |
-|---|---|---|
-| Datasets | Cassava and Rice | Cassava, Rice, **and Maize** (extra, not in the paper) |
-| Cassava accuracy | 77.12% (precision 74%, recall 70%, F1 71%) | 0.77; macro precision 0.74, recall 0.70, F1 0.71 |
-| Rice accuracy | 98.92% | 0.9792 on **48** test images (one image is 2.1 points) |
-| Parameters | 0.63 M | 648,390 for 5 classes (0.648 M) |
-| GFLOPs / GMACs | 9 / 4 | 9.30 GFLOPs by the notebook's estimator |
-| Split, batch size, epochs, optimizer | 90:10, 16, up to 100 with early stopping, Adam 1e-3 | the same (Keras default Adam learning rate is 1e-3) |
-| Channel attention | GAP, Dense 64, Dense 64, sigmoid (figure) | GAP, Dense 64, Dense **128**, sigmoid (C = 128) |
-| Spatial attention | 3x3 convs of 8, 8, 64, then 1x1 (figure) | **1x1** convs of 8, 8, **128**, then 1x1 |
-
-Two things to know about how the recorded numbers were produced:
-
-- In the Cassava notebook the training cell is **commented out**. The model is loaded from a saved checkpoint (`best_Plant_weights.h5`) and the training curves are the output of an earlier run of that cell. The Rice and Maize notebooks train in the notebook.
-- Early stopping and checkpointing monitor `val_loss` on the test split (see Limitations).
-
-## Datasets
-
-| Key | Dataset | Classes | Test split |
-|---|---|---|---|
-| `cassava` | Cassava leaf disease (5,894 images per the paper) | 5: cbb, cbsd, cgm, cmd, healthy | 10% (590 images) |
-| `rice` | Rice leaf diseases (120 original images per the paper) | 3: bacterial leaf blight, brown spot, leaf smut | 10% (48 images) |
-| `maize` | Maize leaf disease | 4: blight, common rust, gray leaf spot, healthy | 10% (421 images) |
-
-Datasets are not included. See [`data/README.md`](data/README.md) for the expected folder layout (class folders `0`, `1`, ...), sources and citations. Images are resized to 128 x 128, scaled to [0, 1] and read with OpenCV.
-
-## Installation
+## Quick start
 
 ```bash
 git clone https://github.com/RashiChauhan67/DARINet.git
@@ -79,10 +60,10 @@ python -m venv .venv && source .venv/bin/activate
 pip install -e .
 ```
 
-## Usage
+Train and evaluate:
 
 ```bash
-# Original protocol (the test split also drives early stopping; see below)
+# Original protocol: the test split also drives early stopping (see Notes)
 python scripts/train.py --data-dir /path/to/cassava-disease/train --dataset cassava \
     --output-dir runs/cassava
 
@@ -95,7 +76,9 @@ python scripts/evaluate.py --data-dir /path/to/rice_leaf_diseases --dataset rice
     --model runs/rice_holdout/best_model.keras
 ```
 
-Defaults follow the notebooks: Adam (Keras default 1e-3), batch size 16, up to 100 epochs, early stopping on validation loss (patience 10 for Cassava, 20 for Rice and Maize, best weights restored). Each run writes `best_model.keras`, `history.json` and `metrics.json`.
+Defaults: Adam (Keras default 1e-3), batch size 16, up to 100 epochs, early stopping on validation loss (patience 10 for Cassava, 20 for Rice and Maize, best weights restored). Each run writes `best_model.keras`, `history.json` and `metrics.json`.
+
+Use the model directly:
 
 ```python
 from darinet.model import build_darinet, compile_model
@@ -103,17 +86,21 @@ from darinet.model import build_darinet, compile_model
 model = compile_model(build_darinet(num_classes=5))  # 648,390 parameters
 ```
 
-## Recorded results (from the original notebooks)
+## Datasets
 
-These are the numbers stored in the notebooks' outputs. **They were not re-run for this repository.**
-
-| Dataset | Test images | Accuracy | Macro F1 | Paper reports |
+| Key | Dataset | Classes | Images | Test split |
 |---|---|---|---|---|
-| Cassava | 590 | **0.77** | 0.71 | 77.12% |
-| Rice | 48 (see caution) | **0.9792** (loss 0.0358) | 0.97 | 98.92% |
-| Maize | 421 | **0.94** | 0.92 | not in the paper |
+| `cassava` | Cassava leaf disease | cbb, cbsd, cgm, cmd, healthy | 5,894 | 10% (590) |
+| `rice` | Rice leaf diseases | bacterial leaf blight, brown spot, leaf smut | 120 originals | 10% (48) |
+| `maize` | Maize leaf disease | blight, common rust, gray leaf spot, healthy | not recorded | 10% (421) |
 
-Per-class tables are in [`results/recorded_results.md`](results/recorded_results.md). Cassava is the hardest dataset: the weakest class is `cbb` (precision 0.43, recall 0.51) and the strongest is `cmd` (recall 0.90). Maize's weakest class is gray leaf spot (recall 0.70).
+Data is not included; see [`data/README.md`](data/README.md) for the expected folder layout (class folders `0`, `1`, ...), sources and citations. Images are resized to 128 x 128, scaled to [0, 1] and read with OpenCV.
+
+## Results
+
+Recorded in the original notebooks. **These were not re-run for this repository.** Per-class tables are in [`results/recorded_results.md`](results/recorded_results.md).
+
+Cassava is the hardest dataset: the weakest class is `cbb` (precision 0.43, recall 0.51) and the strongest is `cmd` (recall 0.90). Maize's weakest class is gray leaf spot (recall 0.70).
 
 ### Cassava
 
@@ -122,57 +109,57 @@ Per-class tables are in [`results/recorded_results.md`](results/recorded_results
 | ![](results/figures/cassava_confusion_matrix.png) | ![](results/figures/cassava_roc.png) |
 | ![](results/figures/cassava_training_accuracy_curve.png) | ![](results/figures/cassava_training_loss_curve.png) |
 
-The training curves show clear overfitting: training accuracy keeps rising while validation accuracy flattens near 0.75 and validation loss turns upward. Interpretability examples from the notebook (LIME explanation and a Grad-CAM heatmap):
+Training accuracy keeps rising while validation accuracy flattens near 0.75 and validation loss turns upward, a sign of overfitting. Interpretability examples from the notebook:
 
 | LIME | Grad-CAM |
 |---|---|
 | ![](results/figures/cassava_lime_example.png) | ![](results/figures/cassava_gradcam_heatmap.png) |
 
-### Rice (48 test images)
+### Rice
 
 | Confusion matrix | ROC curves |
 |---|---|
 | ![](results/figures/rice_confusion_matrix.png) | ![](results/figures/rice_roc.png) |
 | ![](results/figures/rice_training_accuracy_curve.png) | ![](results/figures/rice_training_loss_curve.png) |
 
-### Maize (extra experiment)
+### Maize
 
 | Confusion matrix | ROC curves |
 |---|---|
 | ![](results/figures/maize_confusion_matrix.png) | ![](results/figures/maize_roc.png) |
 | ![](results/figures/maize_training_accuracy_curve.png) | ![](results/figures/maize_training_loss_curve.png) |
 
-## Limitations and reproducibility notes
+## Notes
 
-- **The recorded test accuracy is optimistic.** The notebooks pass the test split as `validation_data`, and early stopping and checkpoint selection monitor its loss. Use `--protocol holdout` for numbers that are not selected on the test set.
-- **The Rice result is unreliable.** It rests on 48 test images, so one image changes accuracy by about 2 points (the gap to the paper's 98.92% is a single image). In addition, the paper describes the Rice dataset as **120 images**, augmented with flips and rotation. The notebook's 48-image test split is 10% of 480 = 4 x 120, which suggests the folder already contained augmented copies when it was split at random. If so, augmented copies of the same leaf can sit in both the training and the test split, and the accuracy is inflated. This could not be checked from the notebook. Split by original image before augmenting.
-- Splits are random (not stratified), at the image level, with a fixed seed. Near-duplicate images (several photos of one plant) can fall on both sides.
-- No framework-level random seeds are set in the notebooks, so a re-run will not reproduce the recorded numbers bit for bit. This port reads files in sorted order, so the exact test images can differ slightly from the original runs.
-- The notebooks' FLOPs figure comes from a hand-written per-layer estimator and is approximate. Parameter counts are exact.
-- The notebooks expect class folders named `0`, `1`, `2`, ... in label order; see `data/README.md`.
+**Implementation.**
+- The model matches the notebooks: parameter counts are 648,390, 648,132 and 648,261 for 5, 3 and 4 classes, as printed by `model.summary()`; the tests check them.
+- The notebooks' FLOPs figure (about 9.3 GFLOPs for Cassava) comes from a hand-written per-layer estimator and is approximate.
 
-## Repository layout
+**Rice result.** Treat it with caution.
+- It rests on 48 test images, so one image changes accuracy by about 2 points.
+- The Rice dataset has 120 original images, and the notebook's 48-image test split is 10% of 480 = 4 x 120. That suggests the folder already held augmented copies (flips and rotations) when it was split at random. If so, copies of the same leaf can fall on both sides of the split and the accuracy is inflated. This could not be checked from the notebook. If you rebuild this experiment, split the original images first and augment only the training portion.
+
+**Evaluation.**
+- The notebooks pass the test split as `validation_data`, and early stopping and checkpoint selection monitor its loss. Use `--protocol holdout` for numbers that are not selected on the test set.
+- In the Cassava notebook the training cell is commented out: the model is loaded from a saved checkpoint, and the curves come from an earlier run. The Rice and Maize notebooks train in the notebook.
+- Splits are random (not stratified) at the image level with a fixed seed. Near-duplicate images (several photos of one plant) can fall on both sides.
+- No framework-level seeds are set, so a re-run will not reproduce the recorded numbers exactly. This port reads files in sorted order, so the exact test images can differ slightly.
+- The notebooks expect class folders named `0`, `1`, `2`, ... in label order (see `data/README.md`). The Maize experiment is an extra one, included alongside Cassava and Rice.
+
+## Repository structure
 
 ```
 .
 ├── src/darinet/         # model, data loading, training and evaluation
 ├── scripts/             # train.py, evaluate.py
 ├── tests/               # unit tests (synthetic data; no dataset needed)
-├── notebooks/           # original notebooks for Cassava, Rice and Maize (unmodified)
-├── docs/figures/        # architecture figure from the paper
+├── notebooks/           # original experiment notebooks (Cassava, Rice, Maize)
+├── docs/figures/        # architecture figure
 ├── results/             # recorded notebook results and figures
 └── data/README.md       # dataset instructions
 ```
 
-## Development
-
-```bash
-pip install -e ".[dev]"
-ruff check .
-pytest
-```
-
-The tests check, among other things, that the model has exactly the parameter counts printed by the notebooks (648,390 / 648,132 / 648,261 for 5 / 3 / 4 classes).
+Development: `pip install -e ".[dev]"`, then `ruff check .` and `pytest`.
 
 ## Citation
 
@@ -193,4 +180,4 @@ If you use this code, please cite the paper (a `CITATION.cff` is provided):
 
 MIT. See [LICENSE](LICENSE). The datasets have their own licenses; check them before reuse.
 
-**Figures.** The architecture figure in `docs/figures/` is reproduced from the paper by its authors. Reuse of that figure is subject to the publisher's terms (IEEE); the MIT license covers the code, and the result plots generated from the notebooks.
+**Figures.** The architecture figure in `docs/figures/` is reproduced from the paper by its authors. Reuse of that figure is subject to the publisher's terms (IEEE); the MIT license covers the code and the result plots generated from the notebooks.

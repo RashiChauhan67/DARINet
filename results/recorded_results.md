@@ -36,9 +36,9 @@ Test loss 0.0358, test accuracy 0.9792.
 
 With 48 images, one prediction is worth 2.08 percentage points of accuracy.
 
-**Possible leakage.** The paper describes the Rice dataset as 120 images, with flip and rotation augmentation applied to the training set. The notebook's test split has 48 images, which is 10% of 480 = 4 x 120. That suggests the folder held augmented copies before the random split, so copies of the same leaf may appear in both training and test data. This could not be verified from the notebook.
+**Possible leakage.** The Rice dataset has 120 original images (flip and rotation augmentation is commonly applied to its training portion). The notebook's test split has 48 images, which is 10% of 480 = 4 x 120. That suggests the folder held augmented copies before the random split, so copies of the same leaf may appear in both training and test data. This could not be verified from the notebook.
 
-## Maize (421 test images; extra experiment, not in the paper)
+## Maize (421 test images; extra experiment)
 
 | Class | Precision | Recall | F1 | Support | AUC |
 |---|---|---|---|---|---|
@@ -51,15 +51,3 @@ With 48 images, one prediction is worth 2.08 percentage points of accuracy.
 | weighted avg | 0.94 | 0.94 | 0.94 | 421 | |
 
 AUC values are read from the legends of the ROC plots in the notebooks.
-
-## What the paper reports
-
-| Quantity | Paper | Notebooks |
-|---|---|---|
-| Cassava accuracy | 77.12% | 0.77 |
-| Cassava precision / recall / F1 | 74% / 70% / 71% | 0.74 / 0.70 / 0.71 (macro) |
-| Rice accuracy | 98.92% | 0.9792 |
-| Parameters | 0.63 M | 0.648 M (Cassava) |
-| GFLOPs / GMACs | 9 / 4 | 9.30 GFLOPs (approximate estimator) |
-
-See the README for the other differences between the notebooks and the paper.
