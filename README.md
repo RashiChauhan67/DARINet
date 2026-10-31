@@ -14,7 +14,7 @@ The code was cleaned up from the original Colab notebooks (kept unmodified in [`
 ## Highlights
 
 - Three datasets: **Cassava** (5 classes), **Rice** (3 classes) and an extra **Maize** experiment (4 classes) that is not in the paper.
-- Recorded test accuracy in the notebooks: Cassava **77%** (590 test images, the paper reports 77.12%), Rice **97.92%** (only 48 test images; the paper reports 98.92%), Maize **94%** (421 test images).
+- Recorded test accuracy in the notebooks: Cassava **77%** (590 test images, the paper reports 77.12%), Rice **97.92%** (only 48 test images, and the split may contain augmented copies of the same leaves; see Limitations; the paper reports 98.92%), Maize **94%** (421 test images).
 - 648,390 parameters for 5 classes; about 9.3 GFLOPs by the notebooks' estimator (the paper reports 0.63 M and 9).
 - Modular Keras 3 port with unit tests, a command-line trainer, and two training protocols (`notebook` and a leakage-free `holdout`).
 
@@ -64,8 +64,8 @@ Two things to know about how the recorded numbers were produced:
 
 | Key | Dataset | Classes | Test split |
 |---|---|---|---|
-| `cassava` | Cassava leaf disease | 5: cbb, cbsd, cgm, cmd, healthy | 10% (590 images) |
-| `rice` | Rice leaf diseases | 3: bacterial leaf blight, brown spot, leaf smut | 10% (48 images) |
+| `cassava` | Cassava leaf disease (5,894 images per the paper) | 5: cbb, cbsd, cgm, cmd, healthy | 10% (590 images) |
+| `rice` | Rice leaf diseases (120 original images per the paper) | 3: bacterial leaf blight, brown spot, leaf smut | 10% (48 images) |
 | `maize` | Maize leaf disease | 4: blight, common rust, gray leaf spot, healthy | 10% (421 images) |
 
 Datasets are not included. See [`data/README.md`](data/README.md) for the expected folder layout (class folders `0`, `1`, ...), sources and citations. Images are resized to 128 x 128, scaled to [0, 1] and read with OpenCV.
@@ -110,7 +110,7 @@ These are the numbers stored in the notebooks' outputs. **They were not re-run f
 | Dataset | Test images | Accuracy | Macro F1 | Paper reports |
 |---|---|---|---|---|
 | Cassava | 590 | **0.77** | 0.71 | 77.12% |
-| Rice | 48 | **0.9792** (loss 0.0358) | 0.97 | 98.92% |
+| Rice | 48 (see caution) | **0.9792** (loss 0.0358) | 0.97 | 98.92% |
 | Maize | 421 | **0.94** | 0.92 | not in the paper |
 
 Per-class tables are in [`results/recorded_results.md`](results/recorded_results.md). Cassava is the hardest dataset: the weakest class is `cbb` (precision 0.43, recall 0.51) and the strongest is `cmd` (recall 0.90). Maize's weakest class is gray leaf spot (recall 0.70).
@@ -145,7 +145,7 @@ The training curves show clear overfitting: training accuracy keeps rising while
 ## Limitations and reproducibility notes
 
 - **The recorded test accuracy is optimistic.** The notebooks pass the test split as `validation_data`, and early stopping and checkpoint selection monitor its loss. Use `--protocol holdout` for numbers that are not selected on the test set.
-- **The Rice result rests on 48 test images**, so it carries a large uncertainty: one image changes accuracy by about 2 points, and the gap to the paper's 98.92% is a single image.
+- **The Rice result is unreliable.** It rests on 48 test images, so one image changes accuracy by about 2 points (the gap to the paper's 98.92% is a single image). In addition, the paper describes the Rice dataset as **120 images**, augmented with flips and rotation. The notebook's 48-image test split is 10% of 480 = 4 x 120, which suggests the folder already contained augmented copies when it was split at random. If so, augmented copies of the same leaf can sit in both the training and the test split, and the accuracy is inflated. This could not be checked from the notebook. Split by original image before augmenting.
 - Splits are random (not stratified), at the image level, with a fixed seed. Near-duplicate images (several photos of one plant) can fall on both sides.
 - No framework-level random seeds are set in the notebooks, so a re-run will not reproduce the recorded numbers bit for bit. This port reads files in sorted order, so the exact test images can differ slightly from the original runs.
 - The notebooks' FLOPs figure comes from a hand-written per-layer estimator and is approximate. Parameter counts are exact.

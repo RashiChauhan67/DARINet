@@ -1,6 +1,6 @@
 # Data
 
-No data is stored in this repository. Download the datasets yourself and check each dataset's license and terms before use.
+No data is stored in this repository. Download the datasets yourself (the notebooks used Kaggle copies) and check each dataset's license and terms before use.
 
 ## Expected layout
 
@@ -26,7 +26,7 @@ rice_leaf_diseases/
 └── 2/   leaf_smut
 ```
 
-### `maize` (4 classes, extra experiment)
+### `maize` (4 classes, extra experiment not in the paper)
 
 ```
 Maize Leaf Disease Dataset/
@@ -36,19 +36,25 @@ Maize Leaf Disease Dataset/
 └── 3/   healthy
 ```
 
-The class names above are the ones printed in the notebooks' classification reports (Cassava and Maize) or inferred from the report order (Rice). Check them against your copy of each dataset.
+The Cassava and Maize class names are the ones printed in the notebooks' classification reports. The Rice names are the paper's three categories, in report order. Check them against your copy.
+
+## Dataset sizes (from the paper)
+
+- **Cassava:** 5,894 images in 5 classes. The notebook's 10% test split has 590 images, which matches.
+- **Rice leaf:** **120 images** in 3 classes. The paper applies augmentation (horizontal flip, vertical flip, rotation) to the *training* set. The notebook's test split has 48 images, which is 10% of 480 = 4 x 120, so the notebook's Rice folder probably already held augmented copies. See the leakage caution in the README. If you rebuild this experiment, split the 120 original images first and augment only the training portion.
+- **Maize:** not in the paper; 421 test images in the notebook.
 
 ## Preprocessing (as in the notebooks)
 
 - Read with OpenCV (BGR channel order), resized to 128 x 128, scaled to [0, 1].
-- Shuffled with seed 2, then split 90% / 10% (train / test) at random, without stratification. In the notebooks this gave 590 (Cassava), 48 (Rice) and 421 (Maize) test images.
+- Shuffled with seed 2, then split 90% / 10% (train / test) at random, without stratification.
 
 ## Sources
 
-Please verify the exact source and license of each copy you use. The notebooks do not record where the data came from beyond folder names.
+The notebooks used copies of these datasets from Kaggle; the notebooks themselves record only the folder names, so confirm the exact Kaggle dataset pages and their licenses for the copies you use.
 
-- **Cassava:** a cassava leaf disease image dataset with the classes cbb, cbsd, cgm, cmd and healthy (for example the Makerere AI Lab cassava data used in the iCassava challenge; see Mwebaze et al., *iCassava 2019 Fine-Grained Visual Categorization Challenge*, arXiv:1908.02900).
-- **Rice:** a rice leaf diseases dataset with bacterial leaf blight, brown spot and leaf smut.
-- **Maize:** a maize leaf disease dataset with blight, common rust, gray leaf spot and healthy.
+- **Cassava:** the paper cites the cassava dataset as Oyewola, D. O., Dada, E. G., Misra, S., Damaševičius, R. *Detecting cassava mosaic disease using a deep residual convolutional neural network with distinct block processing.* PeerJ Computer Science 7:e352 (2021).
+- **Rice:** the paper describes a 120-image, three-class rice leaf dataset (bacterial leaf blight, brown spot, leaf smut), cited there as its reference [36].
+- **Maize:** a four-class maize leaf disease dataset (blight, common rust, gray leaf spot, healthy). Not described in the paper.
 
-Add the exact source and license of the copies you used before publishing results.
+Cite the dataset publications when you publish results, and replace the generic entries above with the exact Kaggle pages once you have confirmed them.
