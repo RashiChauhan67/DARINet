@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the paper below."
+type: software
+title: "DARINet: plant disease identification with a dual self-attention modified residual-inception network"
+authors:
+  - family-names: Chauhan
+    given-names: Rashi
+license: MIT
+repository-code: "https://github.com/RashiChauhan67/DARINet"
+preferred-citation:
+  type: conference-paper
+  title: "Plant Disease Identification Using a Dual Self-Attention Modified Residual-Inception Network"
+  authors:
+    - family-names: Chauhan
+      given-names: Rashi
+    - family-names: Karnati
+      given-names: Mohan
+    - family-names: Dutta
+      given-names: Malay Kishore
+    - family-names: Burget
+      given-names: Radim
+  collection-title: "2023 15th International Congress on Ultra Modern Telecommunications and Control Systems and Workshops (ICUMT)"
+  publisher:
+    name: IEEE
+  year: 2023
+  doi: "10.1109/ICUMT61075.2023.10333302"
