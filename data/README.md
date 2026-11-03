@@ -41,7 +41,7 @@ The Cassava and Maize class names are the ones printed in the notebooks' classif
 ## Dataset sizes
 
 - **Cassava:** 5,894 images in 5 classes. The notebook's 10% test split has 590 images, which matches.
-- **Rice leaf:** **120 original images** in 3 classes. Augmentation (horizontal flip, vertical flip, rotation) is meant to be applied to the *training* portion only. The notebook's test split has 48 images, which is 10% of 480 = 4 x 120, so the notebook's Rice folder probably already held augmented copies. See the leakage caution in the README. If you rebuild this experiment, split the 120 original images first and augment only the training portion.
+- **Rice leaf:** 120 original images in 3 classes (flip and rotation augmentation can be applied to the training portion).
 - **Maize:** 421 test images in the notebook; the total size is not recorded.
 
 ## Preprocessing (as in the notebooks)

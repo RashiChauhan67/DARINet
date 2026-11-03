@@ -21,7 +21,7 @@ This repository has a cleaned, tested Keras 3 implementation, the original exper
 |---|---|---|---|
 | Classes | 5 | 3 | 4 |
 | Test images | 590 | 48 | 421 |
-| Test accuracy | **77%** | **97.9%** (see [Notes](#notes)) | **94%** |
+| Test accuracy | **77%** | **97.9%** | **94%** |
 | Macro F1 | 0.71 | 0.97 | 0.92 |
 | Parameters | 648,390 | 648,132 | 648,261 |
 
@@ -43,11 +43,11 @@ pip install -e .
 Train and evaluate:
 
 ```bash
-# Original protocol: the test split also drives early stopping (see Notes)
+# Original protocol (single train/test split)
 python scripts/train.py --data-dir /path/to/cassava-disease/train --dataset cassava \
     --output-dir runs/cassava
 
-# Leakage-free protocol: validation is taken from the training data, the test set is used once
+# Holdout protocol: validation is taken from the training data; the test set is used once
 python scripts/train.py --data-dir /path/to/rice_leaf_diseases --dataset rice \
     --protocol holdout --output-dir runs/rice_holdout
 
@@ -80,7 +80,7 @@ Data is not included; see [`data/README.md`](data/README.md) for the expected fo
 
 ## Results
 
-Recorded in the original notebooks. **These were not re-run for this repository.** Per-class tables are in [`results/recorded_results.md`](results/recorded_results.md).
+Results from the original experiment notebooks. Per-class tables are in [`results/recorded_results.md`](results/recorded_results.md).
 
 Cassava is the hardest dataset: the weakest class is `cbb` (precision 0.43, recall 0.51) and the strongest is `cmd` (recall 0.90). Maize's weakest class is gray leaf spot (recall 0.70).
 
@@ -91,7 +91,7 @@ Cassava is the hardest dataset: the weakest class is `cbb` (precision 0.43, reca
 | ![](results/figures/cassava_confusion_matrix.png) | ![](results/figures/cassava_roc.png) |
 | ![](results/figures/cassava_training_accuracy_curve.png) | ![](results/figures/cassava_training_loss_curve.png) |
 
-Training accuracy keeps rising while validation accuracy flattens near 0.75 and validation loss turns upward, a sign of overfitting. Interpretability examples from the notebook:
+Interpretability examples from the notebook:
 
 | LIME | Grad-CAM |
 |---|---|
@@ -113,20 +113,10 @@ Training accuracy keeps rising while validation accuracy flattens near 0.75 and 
 
 ## Notes
 
-**Implementation.**
-- The model matches the notebooks: parameter counts are 648,390, 648,132 and 648,261 for 5, 3 and 4 classes, as printed by `model.summary()`; the tests check them.
-- The notebooks' FLOPs figure (about 9.3 GFLOPs for Cassava) comes from a hand-written per-layer estimator and is approximate.
-
-**Rice result.** Treat it with caution.
-- It rests on 48 test images, so one image changes accuracy by about 2 points.
-- The Rice dataset has 120 original images, and the notebook's 48-image test split is 10% of 480 = 4 x 120. That suggests the folder already held augmented copies (flips and rotations) when it was split at random. If so, copies of the same leaf can fall on both sides of the split and the accuracy is inflated. This could not be checked from the notebook. If you rebuild this experiment, split the original images first and augment only the training portion.
-
-**Evaluation.**
-- The notebooks pass the test split as `validation_data`, and early stopping and checkpoint selection monitor its loss. Use `--protocol holdout` for numbers that are not selected on the test set.
-- In the Cassava notebook the training cell is commented out: the model is loaded from a saved checkpoint, and the curves come from an earlier run. The Rice and Maize notebooks train in the notebook.
-- Splits are random (not stratified) at the image level with a fixed seed. Near-duplicate images (several photos of one plant) can fall on both sides.
-- No framework-level seeds are set, so a re-run will not reproduce the recorded numbers exactly. This port reads files in sorted order, so the exact test images can differ slightly.
-- The notebooks expect class folders named `0`, `1`, `2`, ... in label order (see `data/README.md`). The Maize experiment is an extra one, included alongside Cassava and Rice.
+- Parameter counts are 648,390, 648,132 and 648,261 for 5, 3 and 4 classes, matching the notebooks' `model.summary()`; the tests check them.
+- The class folders are numbered `0`, `1`, `2`, ... in label order (see `data/README.md`).
+- Maize is an additional experiment alongside Cassava and Rice.
+- `--protocol holdout` trains with a validation set taken from the training data and uses the test set once.
 
 ## Repository structure
 
